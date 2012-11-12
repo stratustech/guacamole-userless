@@ -2,8 +2,11 @@
 package net.sourceforge.guacamole.net.basic;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
+import java.util.UUID;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -12,14 +15,12 @@ import javax.servlet.http.HttpSession;
 import net.sourceforge.guacamole.GuacamoleException;
 import net.sourceforge.guacamole.net.auth.AuthenticationProvider;
 import net.sourceforge.guacamole.net.auth.Credentials;
-import net.sourceforge.guacamole.net.basic.event.SessionListenerCollection;
 import net.sourceforge.guacamole.net.basic.properties.BasicGuacamoleProperties;
 import net.sourceforge.guacamole.net.event.AuthenticationFailureEvent;
 import net.sourceforge.guacamole.net.event.AuthenticationSuccessEvent;
 import net.sourceforge.guacamole.net.event.listener.AuthenticationFailureListener;
 import net.sourceforge.guacamole.net.event.listener.AuthenticationSuccessListener;
 import net.sourceforge.guacamole.properties.GuacamoleProperties;
-import net.sourceforge.guacamole.protocol.GuacamoleConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,8 +163,8 @@ public abstract class AuthenticatingHttpServlet extends HttpServlet {
      * @param session The session to retrieve configurations from.
      * @return The configurations associated with the given session.
      */
-    protected Map<String, GuacamoleConfiguration> getConfigurations(HttpSession session) {
-        return (Map<String, GuacamoleConfiguration>) session.getAttribute(CONFIGURATIONS_ATTRIBUTE);
+    protected List<String> getActiveIds(HttpSession session) {
+        return (List<String>) session.getAttribute(CONFIGURATIONS_ATTRIBUTE);
     }
 
     @Override
@@ -172,103 +173,27 @@ public abstract class AuthenticatingHttpServlet extends HttpServlet {
 
         HttpSession httpSession = request.getSession(true);
 
-        // Try to get configs from session
-        Map<String, GuacamoleConfiguration> configs = getConfigurations(httpSession);
-
-        // If no configs, try to authenticate the user to get the configs using
-        // this request.
-        if (configs == null) {
-
-            SessionListenerCollection listeners;
-            try {
-                listeners = new SessionListenerCollection(httpSession);
-            }
-            catch (GuacamoleException e) {
-                logger.error("Failed to retrieve listeners. Authentication canceled.", e);
-                failAuthentication(response);
-                return;
+        List<String> activeIds = getActiveIds(httpSession);
+        if(activeIds == null && request.getParameter("hostname") != null) {
+        	activeIds = new ArrayList<String>();
+        	activeIds.add(UUID.randomUUID().toString());
             }
 
-            // Retrieve username and password from parms
-            String username = request.getParameter("username");
-            String password = request.getParameter("password");
-
-            // Build credentials object
+        // Add fake credentials
             Credentials credentials = new Credentials();
             credentials.setSession(httpSession);
             credentials.setRequest(request);
-            credentials.setUsername(username);
-            credentials.setPassword(password);
-
-            // Get authorized configs
-            try {
-                configs = authProvider.getAuthorizedConfigurations(credentials);
-            }
-
-
-            /******** HANDLE FAILED AUTHENTICATION ********/
-
-            // If error retrieving configs, fail authentication, notify listeners
-            catch (GuacamoleException e) {
-                logger.error("Error retrieving configuration(s) for user \"{}\".",
-                        credentials.getUsername(), e);
-
-                notifyFailed(listeners, credentials);
-                failAuthentication(response);
-                return;
-            }
-
-            // If no configs, fail authentication, notify listeners
-            if (configs == null) {
-                logger.warn("Authentication attempt from {} for user \"{}\" failed.",
-                        request.getRemoteAddr(), credentials.getUsername());
-
-                notifyFailed(listeners, credentials);
-                failAuthentication(response);
-                return;
-            }
-
-
-            /******** HANDLE SUCCESSFUL AUTHENTICATION ********/
-
-            try {
-
-                // Otherwise, authentication has been succesful
-                logger.info("User \"{}\" successfully authenticated from {}.",
-                        credentials.getUsername(), request.getRemoteAddr());
-
-                // Notify of success, cancel if requested
-                if (!notifySuccess(listeners, credentials)) {
-                    logger.info("Successful authentication canceled by hook.");
-                    failAuthentication(response);
-                    return;
-                }
-
-            }
-            catch (GuacamoleException e) {
-
-                // Cancel authentication success if hook throws exception
-                logger.error("Successful authentication canceled by error in hook.", e);
-                failAuthentication(response);
-                return;
-
-            }
 
             // Associate configs and credentials with session
-            httpSession.setAttribute(CONFIGURATIONS_ATTRIBUTE, configs);
+        httpSession.setAttribute(CONFIGURATIONS_ATTRIBUTE, activeIds);
             httpSession.setAttribute(CREDENTIALS_ATTRIBUTE,    credentials);
 
-
-        }
-
         // Allow servlet to run now that authentication has been validated
-        authenticatedService(configs, request, response);
+        authenticatedService(activeIds, request, response);
 
     }
 
-    protected abstract void authenticatedService(
-            Map<String, GuacamoleConfiguration> configs,
-            HttpServletRequest request, HttpServletResponse response)
+    protected abstract void authenticatedService(List<String> activeIds, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException;
 
 }

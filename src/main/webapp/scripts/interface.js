@@ -452,8 +452,8 @@ var GuacamoleUI = {
     GuacamoleUI.display.addEventListener('touchend', GuacamoleUI.stopLongPressDetect, true);
 
     // Close menu on mouse movement
-    GuacamoleUI.display.addEventListener('mousemove', GuacamoleUI.startMenuCloseDetect, true);
-    GuacamoleUI.display.addEventListener('mousedown', GuacamoleUI.startMenuCloseDetect, true);
+    //GuacamoleUI.display.addEventListener('mousemove', GuacamoleUI.startMenuCloseDetect, true);
+    //GuacamoleUI.display.addEventListener('mousedown', GuacamoleUI.startMenuCloseDetect, true);
 
     // Reconnect button
     GuacamoleUI.buttons.reconnect.onclick = function() {
@@ -515,7 +515,7 @@ GuacamoleUI.attach = function(guac) {
     }
 
     // When mouse enters display, start detection of intent to close menu
-    guac_display.addEventListener('mouseover', GuacamoleUI.startMenuCloseDetect, true);
+    //guac_display.addEventListener('mouseover', GuacamoleUI.startMenuCloseDetect, true);
 
     guac_display.onclick = function(e) {
         e.preventDefault();
@@ -662,7 +662,7 @@ GuacamoleUI.attach = function(guac) {
 
             // Connecting
             case 1:
-                GuacamoleUI.shadeMenu();
+                //GuacamoleUI.shadeMenu();
                 GuacamoleUI.showStatus("Connecting...");
                 title_prefix = "[Connecting...]";
                 break;

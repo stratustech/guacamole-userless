@@ -43,12 +43,16 @@
                         <div id="login-fields">
                             <table>
                                 <tr>
-                                    <th>Username</th>
-                                    <td><input type="text" name="username" id="username" autofocus="autofocus"/></td>
+                                    <th>Hostname</th>
+                                    <td><input type="text" name="hostname" id="hostname" autofocus="autofocus"/></td>
+                                </tr>
+                                <tr>
+                                    <th>Port</th>
+                                    <td><input type="text" name="port" id="port"/></td>
                                 </tr>
                                 <tr>
                                     <th>Password</th>
-                                    <td><input type="password" name="password" id="password"/></td>
+                                    <td><input type="text" name="password" id="password" /></td>
                                 </tr>
                             </table>
 
@@ -56,7 +60,7 @@
                         </div>
 
                         <div id="buttons">
-                            <input type="submit" name="login" id="login" value="Login"/>
+                            <input type="submit" name="login" id="login" value="Connect"/>
                         </div>
 
                     </form>
@@ -101,10 +105,22 @@
 
             // Constructs the URL for a client which connects to the connection
             // with the given id.
-            function getClientURL(id) {
+            function getClientURL(config, extraParameters) {
+                var url = 'client.xhtml?';
                 
-                // Construct URL for client with given id
-                return "client.xhtml?id=" + encodeURIComponent(id);
+                for (var property in config) {
+                	url = url + property + '=' + config[property] + '&';
+                }
+                
+                if(typeof extraParameters !== 'undefined' && extraParameters.length > 0) {
+                	url = url + extraParameters;
+                }
+                else {
+                	url = url.slice(0,-1);
+                }
+                
+                // Construct URL for client with config
+                return url;
                 
             }
 
@@ -113,7 +129,7 @@
             // the connection list UI (or the client for the only available
             // connection, if there is only one) is displayed if the user is
             // authenticated.
-            function resetUI() {
+            function resetUI(extraParameters) {
 
                 // Get parameters from query string
                 var parameters = window.location.search.substring(1);
@@ -133,8 +149,8 @@
                 }
 
                 // If only one connection, redirect to that.
-                if (configs.length == 1) {
-                    window.location.href = getClientURL(configs[0].id);
+                if (configs.length == 1 && configs[0].id !== null) {
+                    window.location.href = getClientURL(configs[0], extraParameters);
                     return;
                 }
 
@@ -159,7 +175,7 @@
 
                     // Create link to client
                     var clientLink = document.createElement("a");
-                    clientLink.setAttribute("href", getClientURL(configs[i].id));
+                    clientLink.setAttribute("href", getClientURL(configs[i]));
 
                     // Set cell contents
                     protocol.appendChild(protocolIcon);
@@ -186,7 +202,8 @@
             var loginUI = document.getElementById("login-ui");
             var connectionListUI = document.getElementById("connection-list-ui");
             var logout = document.getElementById("logout");
-            var username = document.getElementById("username");
+            var hostname = document.getElementById("hostname");
+            var port = document.getElementById("port");
             var password = document.getElementById("password");
 
             logout.onclick = function() {
@@ -200,7 +217,8 @@
 
                 // Get username and password from form
                 var data =
-                       "username=" + encodeURIComponent(username.value)
+                       "hostname=" + encodeURIComponent(hostname.value)
+                    + "&port=" + encodeURIComponent(port.value)
                     + "&password=" + encodeURIComponent(password.value)
 
                 // Include query parameters in submission data
@@ -219,10 +237,11 @@
                         throw new Error("Invalid login");
 
                     // Ensure username/password fiels are blurred after submit
-                    username.blur();
+                    hostname.blur();
+                    port.blur();
                     password.blur();
 
-                    resetUI();
+                    resetUI(data);
 
                 }
                 catch (e) {
@@ -244,8 +263,10 @@
             }
 
             // Turn off autocorrect and autocapitalization on usename 
-            username.setAttribute("autocorrect", "off");
-            username.setAttribute("autocapitalize", "off");
+            hostname.setAttribute("autocorrect", "off");
+            hostname.setAttribute("autocapitalize", "off");
+            password.setAttribute("autocorrect", "off");
+            password.setAttribute("autocapitalize", "off");
 
             resetUI();
 

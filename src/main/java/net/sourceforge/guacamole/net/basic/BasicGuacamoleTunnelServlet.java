@@ -20,6 +20,7 @@ package net.sourceforge.guacamole.net.basic;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -54,9 +55,7 @@ public class BasicGuacamoleTunnelServlet extends AuthenticatingHttpServlet {
     private Logger logger = LoggerFactory.getLogger(BasicGuacamoleTunnelServlet.class);
 
     @Override
-    protected void authenticatedService(
-            Map<String, GuacamoleConfiguration> configs,
-            HttpServletRequest request, HttpServletResponse response)
+    protected void authenticatedService(List<String> activeIds, HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
 
         // If authenticated, respond as tunnel
@@ -161,27 +160,35 @@ public class BasicGuacamoleTunnelServlet extends AuthenticatingHttpServlet {
                 throw e;
             }
 
-            // Get ID of connection
-            String id = request.getParameter("id");
+            // Get info for the connection
+            String serverHostname = request.getParameter("hostname");
+            String serverPort = request.getParameter("port");
+            String password = request.getParameter("password");
+            String protocol = request.getParameter("protocol");
+            if(serverHostname == null || serverPort == null || password == null) {
+            	logger.warn("Configuration hostname={} not found.", serverHostname + ":" + serverPort);
+            	throw new GuacamoleSecurityException("Requested configuration does not have required parameters.");
+            }
+            
+            List<String> activeIds = getActiveIds(httpSession);
 
             // Get credentials
             final Credentials credentials = getCredentials(httpSession);
 
-            // Get authorized configs
-            Map<String, GuacamoleConfiguration> configs = getConfigurations(httpSession);
-
-            // If no configs/credentials in session, not authorized
-            if (credentials == null || configs == null)
-                throw new GuacamoleSecurityException("Cannot connect - user not logged in.");
-
             // Get authorized config
-            GuacamoleConfiguration config = configs.get(id);
-            if (config == null) {
-                logger.warn("Configuration id={} not found.", id);
-                throw new GuacamoleSecurityException("Requested configuration is not authorized.");
+            GuacamoleConfiguration config = new GuacamoleConfiguration();
+            if(protocol == null || !protocol.equalsIgnoreCase("rdp")) {
+            	config.setProtocol("vnc");
             }
+            else {
+            	config.setProtocol("rdp");
+            }
+            config.setParameter("hostname", serverHostname);
+            config.setParameter("port", serverPort);
+            config.setParameter("password", password);
+            config.setParameter("id", activeIds.get(0));
 
-            logger.info("Successful connection from {} to \"{}\".", request.getRemoteAddr(), id);
+            logger.info("Successful connection from {} to \"{}\".", request.getRemoteAddr());
 
             // Configure and connect socket
             String hostname = GuacamoleProperties.getProperty(GuacamoleProperties.GUACD_HOSTNAME);

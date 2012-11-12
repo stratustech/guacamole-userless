@@ -20,8 +20,11 @@ package net.sourceforge.guacamole.net.basic;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,31 +40,26 @@ import net.sourceforge.guacamole.protocol.GuacamoleConfiguration;
 public class ConfigurationList extends AuthenticatingHttpServlet {
 
     @Override
-    protected void authenticatedService(
-            Map<String, GuacamoleConfiguration> configs,
-            HttpServletRequest request, HttpServletResponse response)
-    throws IOException {
+    protected void authenticatedService(List<String> activeIds, HttpServletRequest request, HttpServletResponse response)
+    throws IOException, ServletException {
 
         // Do not cache
         response.setHeader("Cache-Control", "no-cache");
 
+        if(activeIds == null || activeIds.size() < 1) {
+        	throw new ServletException("No id provided");
+        }
+        
         // Write XML
         response.setHeader("Content-Type", "text/xml");
         PrintWriter out = response.getWriter();
         out.println("<configs>");
-
-        for (Entry<String, GuacamoleConfiguration> entry : configs.entrySet()) {
-
-            GuacamoleConfiguration config = entry.getValue();
-
             // Write config
             out.print("<config id=\"");
-            out.print(entry.getKey());
+        out.print(activeIds.get(0));
             out.print("\" protocol=\"");
-            out.print(config.getProtocol());
+        out.print("vnc");
             out.println("\"/>");
-
-        }
 
         out.println("</configs>");
     }
