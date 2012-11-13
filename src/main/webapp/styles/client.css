@@ -31,6 +31,7 @@ img {
 .software-cursor {
     cursor: url('../images/mouse/dot.gif'),url('../images/mouse/blank.cur'),default;
     overflow: hidden;
+    border: 1px solid #777;
 }
 
 .guac-error .software-cursor {
