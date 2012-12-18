@@ -25,7 +25,7 @@
         <link rel="icon" type="image/png" href="images/guacamole-logo-64.png"/>
         <link rel="apple-touch-icon" type="image/png" href="images/guacamole-logo-144.png"/>
         <link rel="stylesheet" type="text/css" href="styles/login.css"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi"/>
         <title>Guacamole ${project.version}</title>
     </head>
 
@@ -56,7 +56,7 @@
                                 </tr>
                             </table>
 
-                            <img class="logo" src="images/guacamole-logo-64.png" alt=""/>
+                            <img class="logo" src="images/guac-mono-192.png" alt=""/>
                         </div>
 
                         <div id="buttons">
@@ -75,22 +75,64 @@
             <div id="logout-panel">
                 <button id="logout">Logout</button>
             </div>
-            
-            <h1>
-                <img class="logo" src="images/guacamole-logo-64.png" alt=""/>
-                Available Connections
-            </h1>
-            
-            <table class="connections">
-                <thead>
-                    <tr>
-                        <th class="protocol"> </th>
-                        <th class="name">Name</th>
-                    </tr>
-                </thead>
-                <tbody id="connections-tbody">
-                </tbody>
-            </table>
+           
+            <h2>Recent Connections</h2>
+            <div id="recent-connections">
+                <p id="no-recent">No recent connections.</p>
+            </div>
+
+            <h2>All Connections</h2>
+            <div id="all-connections">
+            </div>
+
+            <h2>Clipboard</h2>
+            <div id="clipboardDiv">
+                <p>
+                Text copied/cut within Guacamole will appear here. Changes to the text will affect the remote clipboard, and will be pastable within the remote desktop. Use the textbox below as an interface between the client and server clipboards.
+                </p>
+                <textarea rows="10" cols="40" id="clipboard"></textarea>
+            </div>
+
+            <h2>Settings</h2>
+            <div id="settings">
+
+                <dl>
+                    <!-- Auto-fit display -->
+                    <dt>
+                        <input type="checkbox" id="auto-fit"/>
+                        Auto-fit display to browser window
+                    </dt>
+                    <dd>
+                        <p>
+                            If checked, remote displays are automatically
+                            scaled to exactly fit within the browser window. If
+                            unchecked, remote displays are always shown at their
+                            natural resolution, even if doing so causes the
+                            display to extend beyond the bounds of the window.
+                        </p>
+                    </dd>
+
+                    <!-- Enable/disable sound -->
+                    <dt>
+                        <input type="checkbox" id="disable-sound"/>
+                        Disable sound
+                    </dt>
+                    <dd>
+                        <p>
+                            If on a device or network where bandwidth usage must
+                            be kept to a minimum, you may wish to check this box
+                            and disable sound. This can also be necessary if a
+                            device doesn't actually support sound, but claims
+                            to, resulting in wasted bandwidth.
+                        </p>
+                        <p>
+                            <strong>Changing this setting will only affect
+                            future connections.</strong>
+                        </p>
+                    </dd>
+                </dl>
+
+            </div>
 
         </div>
 
@@ -99,178 +141,9 @@
         </div>
 
         <script type="text/javascript" src="scripts/connections.js"></script>
-
-        <!-- Init -->
-        <script type="text/javascript"> /* <![CDATA[ */
-
-            // Constructs the URL for a client which connects to the connection
-            // with the given id.
-            function getClientURL(config, extraParameters) {
-                var url = 'client.xhtml?';
-                
-                for (var property in config) {
-                	url = url + property + '=' + config[property] + '&';
-                }
-                
-                if(typeof extraParameters !== 'undefined' && extraParameters.length > 0) {
-                	url = url + extraParameters;
-                }
-                else {
-                	url = url.slice(0,-1);
-                }
-                
-                // Construct URL for client with config
-                return url;
-                
-            }
-
-            // Resets the interface such that the login UI is displayed if
-            // the user is not authenticated (or authentication fails) and
-            // the connection list UI (or the client for the only available
-            // connection, if there is only one) is displayed if the user is
-            // authenticated.
-            function resetUI(extraParameters) {
-
-                // Get parameters from query string
-                var parameters = window.location.search.substring(1);
-
-                var configs;
-                try {
-                    configs = getConfigList(parameters);
-                }
-                catch (e) {
-
-                    // Show login UI if unable to get configs
-                    loginUI.style.display = "";
-                    connectionListUI.style.display = "none";
-
-                    return;
-
-                }
-
-                // If only one connection, redirect to that.
-                if (configs.length == 1 && configs[0].id !== null) {
-                    window.location.href = getClientURL(configs[0], extraParameters);
-                    return;
-                }
-
-                // Remove all rows from connections list
-                var tbody = document.getElementById("connections-tbody");
-                tbody.innerHTML = "";
-                
-                // Add one row per connection
-                for (var i=0; i<configs.length; i++) {
-
-                    // Create row and cells
-                    var tr = document.createElement("tr");
-                    var protocol = document.createElement("td");
-                    var id = document.createElement("td");
-
-                    var protocolIcon = document.createElement("div");
-                    protocolIcon.className = "protocol icon " + configs[i].protocol;
-
-                    // Set CSS
-                    protocol.className = "protocol";
-                    id.className = "name";
-
-                    // Create link to client
-                    var clientLink = document.createElement("a");
-                    clientLink.setAttribute("href", getClientURL(configs[i]));
-
-                    // Set cell contents
-                    protocol.appendChild(protocolIcon);
-                    //protocol.textContent   = configs[i].protocol;
-                    clientLink.textContent = configs[i].id;
-                    id.appendChild(clientLink);
-
-                    // Add cells
-                    tr.appendChild(protocol);
-                    tr.appendChild(id);
-
-                    // Add row
-                    tbody.appendChild(tr);
-
-                }
-
-                // If configs could be retrieved, display list
-                loginUI.style.display = "none";
-                connectionListUI.style.display = "";
-
-            }
-
-            var loginForm = document.getElementById("login-form");
-            var loginUI = document.getElementById("login-ui");
-            var connectionListUI = document.getElementById("connection-list-ui");
-            var logout = document.getElementById("logout");
-            var hostname = document.getElementById("hostname");
-            var port = document.getElementById("port");
-            var password = document.getElementById("password");
-
-            logout.onclick = function() {
-                window.location.href = "logout";
-            };
-
-            loginForm.onsubmit = function() {
-
-                // Get parameters from query string
-                var parameters = window.location.search.substring(1);
-
-                // Get username and password from form
-                var data =
-                       "hostname=" + encodeURIComponent(hostname.value)
-                    + "&port=" + encodeURIComponent(port.value)
-                    + "&password=" + encodeURIComponent(password.value)
-
-                // Include query parameters in submission data
-                if (parameters) data += "&" + parameters;
-
-                try {
-
-                    // Log in
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "login", false);
-                    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                    xhr.send(data);
-
-                    // Handle failures
-                    if (xhr.status != 200)
-                        throw new Error("Invalid login");
-
-                    // Ensure username/password fiels are blurred after submit
-                    hostname.blur();
-                    port.blur();
-                    password.blur();
-
-                    resetUI(data);
-
-                }
-                catch (e) {
-
-                    var loginError = document.getElementById("login-error");
-
-                    // Display error, reset and refocus password field
-                    loginError.textContent = e.message;
-                    password.value = "";
-                    password.focus();
-
-                    return false;
-
-                }
-
-                // On success, hide loginUI, get and show connection list.
-                return false;
-
-            }
-
-            // Turn off autocorrect and autocapitalization on usename 
-            hostname.setAttribute("autocorrect", "off");
-            hostname.setAttribute("autocapitalize", "off");
-            password.setAttribute("autocorrect", "off");
-            password.setAttribute("autocapitalize", "off");
-
-            resetUI();
-
-            /* ]]> */ </script>
+        <script type="text/javascript" src="scripts/session.js"></script>
+        <script type="text/javascript" src="scripts/history.js"></script>
+        <script type="text/javascript" src="scripts/root-ui.js"></script>
 
     </body>
 

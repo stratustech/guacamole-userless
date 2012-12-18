@@ -17,15 +17,26 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+* {
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+input[type=checkbox], input[type=text], textarea {
+    -webkit-tap-highlight-color: rgba(128,192,128,0.5);
+}
+
+input[type=submit], button {
+    -webkit-appearance: none;
+}
+
 body {
-    background: gray;
-    font-family: sans-serif;
+    background: #EEE;
+    font-family: FreeSans, Helvetica, Arial, sans-serif;
     padding: 0;
     margin: 0;
 }
 
 div#login-ui {
-    background: #BCA;
     height: 100%;
     width: 100%;
     position: fixed;
@@ -76,45 +87,84 @@ div#login-dialog #buttons {
 
 div#login-dialog #buttons input,
 div#logout-panel button {
-    background: #9A8;
-    border: 1px solid #676;
-    color: black; 
-    padding: 0.25em;
+
+    background: #8A6;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    -moz-border-radius: 0.6em;
+    -webkit-border-radius: 0.6em;
+    -khtml-border-radius: 0.6em;
+    border-radius: 0.6em;
+
+    color: white;
+    text-shadow: -1px -1px rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    font-size: 1.125em;
+
+    box-shadow: inset -1px -1px 0.25em rgba(0, 0, 0, 0.25),
+                inset 1px 1px 0.25em rgba(255, 255, 255, 0.25),
+                -1px -1px 0.25em rgba(0, 0, 0, 0.25),
+                1px 1px 0.25em rgba(255, 255, 255, 0.25);
+    
+    padding: 0.35em;
     padding-right: 1em;
     padding-left: 1em;
+    min-width: 5em;
+
 }
 
 div#login-dialog #buttons input:hover,
 div#logout-panel button:hover {
-    background: #CDB;
-    border: 1px solid #9A8;
+    background: #9C7;
 }
 
 div#login-dialog #buttons input:active,
 div#logout-panel button:active {
-    padding-top: 0.35em;
-    padding-left: 1.1em;
 
-    padding-bottom: 0.15em;
+    padding-left: 1.1em;
     padding-right: 0.9em;
+    padding-top: 0.45em;
+    padding-bottom: 0.25em;
+    
+    box-shadow: 
+                inset 1px 1px 0.25em rgba(0, 0, 0, 0.25),
+                -1px -1px 0.25em rgba(0, 0, 0, 0.25),
+                1px 1px 0.25em rgba(255, 255, 255, 0.25);
 }
 
 div#login-dialog #login-fields {
     
-    background: #CDB;
     vertical-align: middle;
 
     padding: 1em;
-    border: 1px solid #676;
+    background: #DDD;
+    border: 1px solid #999;
+    -moz-border-radius: 0.25em;
+    -webkit-border-radius: 0.25em;
+    -khtml-border-radius: 0.25em;
+    border-radius: 0.25em;
 
+}
+
+div#login-dialog th {
+    text-shadow: 1px 1px white;
 }
 
 div#login-dialog #login-fields input {
-    border: 1px solid #676;
+    border: 1px solid #777;
+    -moz-border-radius: 0.2em;
+    -webkit-border-radius: 0.2em;
+    -khtml-border-radius: 0.2em;
+    border-radius: 0.2em;
+    width: 100%;
 }
 
 div#login-dialog #login-fields img.logo {
-    float: left;
+    position: fixed;
+    margin: 10px;
+    left: 0;
+    bottom: 0;
+    opacity: 0.1;
+    z-index: -1;
 }
 
 div#version-dialog {
@@ -128,7 +178,7 @@ div#version-dialog {
     color: black;
     opacity: 0.5;
 
-    padding: 0.25em;
+    padding: 0.5em;
 }
 
 img {
@@ -138,59 +188,6 @@ img {
 img#license {
     float: right;
     margin: 2px;
-}
-
-div#connection-list-ui {
-    background: #BCA;
-}
-
-div#connection-list-ui table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-div#connection-list-ui table thead {
-    background: #9A8;
-}
-
-div#connection-list-ui table thead th.protocol {
-    width: 1em;
-    padding: 0.5em;
-}
-
-div#connection-list-ui table thead th.name {
-    text-align: left;
-    padding: 0.5em;
-}
-
-div#connection-list-ui table thead tr {
-    border-top:    1px solid #676;
-    border-bottom: 1px solid gray;
-}
-
-div#connection-list-ui table tbody {
-    background: white;
-}
-
-div#connection-list-ui table tbody tr {
-    border-top:    1px solid gray;
-    border-bottom: 1px solid gray;
-}
-
-div#connection-list-ui table td {
-    padding: 0.25em;
-    text-align: center;
-}
-
-div#connection-list-ui table td.name {
-    text-align: left;
-}
-
-div#connection-list-ui table tbody tr:nth-child(even) { background: #CCC; }
-div#connection-list-ui table tbody tr:nth-child(odd)  { background: #EEE; }
-
-div#connection-list-ui table td.description {
-    text-align: left;
 }
 
 div#connection-list-ui h1 {
@@ -204,32 +201,161 @@ div#connection-list-ui h1 {
 
 }
 
+div#connection-list-ui h2 {
+
+    padding: 0.5em;
+    margin: 0;
+    font-size: 1.5em;
+
+    font-weight: lighter;
+    text-shadow: 1px 1px white;
+
+    border-top: 1px solid #AAA;
+    border-bottom: 1px solid #AAA;
+    background: #DDD;
+    
+}
+
 div#connection-list-ui img {
     vertical-align: middle;
 }
 
 div#logout-panel {
-    padding: 0.25em;
+    padding: 0.45em;
     text-align: right;
     float: right;
 }
 
-div#connection-list-ui a[href] {
-    text-decoration: none;
-    color: blue;
+.history-unavailable div#recent-connections {
+    display: none;
 }
 
-div#connection-list-ui a[href]:hover {
-    text-decoration: underline;
+div#recent-connections,
+div#clipboardDiv,
+div#settings,
+div#all-connections {
+    margin: 0;
+    padding: 1em;
 }
 
-.protocol.icon {
+div#recent-connections {
+    text-align: center;
+}
+
+#no-recent {
+
+    color: black;
+    text-shadow: 1px 1px white;
+    opacity: 0.5;
+    
+    font-size: 2em;
+    font-weight: bolder;
+}
+
+div#recent-connections div.connection {
+    -moz-border-radius: 0.5em;
+    -webkit-border-radius: 0.5em;
+    -khtml-border-radius: 0.5em;
+    border-radius: 0.5em;
+    display: inline-block;
+    padding: 1em;
+    margin: 1em;
+    text-align: center;
+    max-width: 75%;
+    overflow: hidden;
+}
+
+.connection {
+    cursor: pointer;
+}
+
+.connection:hover {
+    background: #CDA;
+}
+
+.connection .name {
+    color: black;
+    font-weight: normal;
+    padding: 0.1em;
+}
+
+.connection .thumbnail {
+    margin: 0.5em;
+}
+
+.connection .thumbnail img {
+    border: 1px solid black;
+    box-shadow: 1px 1px 5px black;
+    max-width: 75%;
+}
+
+div#all-connections .connection {
+    display: block;
+    text-align: left;
+}
+
+div#all-connections .connection .thumbnail {
+    display: none;
+}
+
+div#all-connections .connection {
+    padding: 0.1em;
+}
+
+.protocol {
+    display: inline-block;
+}
+
+.protocol .icon {
     width: 24px;
     height: 24px;
-    background-image: url('../images/protocol-icons/tango/video-display.png');
+    background-image: url('../images/protocol-icons/guac-plug.png');
+    background-size: 16px 16px;
+    -moz-background-size: 16px 16px;
+    -webkit-background-size: 16px 16px;
+    -khtml-background-size: 16px 16px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    opacity: 0.5;
 }
 
-.protocol.icon.ssh {
-    background-image: url('../images/protocol-icons/tango/terminal.png');
+.protocol .icon.ssh {
+    background-image: url('../images/protocol-icons/guac-text.png');
 }
 
+.protocol .icon.vnc,
+.protocol .icon.rdp {
+    background-image: url('../images/protocol-icons/guac-monitor.png');
+}
+
+div#recent-connections .protocol {
+    display: none;
+}
+
+.caption * {
+    vertical-align: middle;
+}
+
+.caption .name {
+    margin-left: 0.25em;
+}
+
+#clipboardDiv textarea {
+    width: 100%;
+    border: 1px solid #AAA;
+    -moz-border-radius: 0.25em;
+    -webkit-border-radius: 0.25em;
+    -khtml-border-radius: 0.25em;
+    border-radius: 0.25em;
+}
+
+#settings dt {
+    border-bottom: 1px dotted #AAA;
+    padding-bottom: 0.25em;
+}
+
+#settings dd {
+    margin: 1.5em;
+    margin-left: 2.5em;
+    font-size: 0.75em;
+}

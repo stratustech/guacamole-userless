@@ -19,6 +19,7 @@ package net.sourceforge.guacamole.net.basic;
  */
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -28,18 +29,19 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import net.sourceforge.guacamole.GuacamoleException;
 import net.sourceforge.guacamole.GuacamoleSecurityException;
-import net.sourceforge.guacamole.net.InetGuacamoleSocket;
-import net.sourceforge.guacamole.protocol.GuacamoleConfiguration;
-import net.sourceforge.guacamole.properties.GuacamoleProperties;
 import net.sourceforge.guacamole.net.GuacamoleSocket;
 import net.sourceforge.guacamole.net.GuacamoleTunnel;
+import net.sourceforge.guacamole.net.InetGuacamoleSocket;
 import net.sourceforge.guacamole.net.auth.Credentials;
 import net.sourceforge.guacamole.net.basic.event.SessionListenerCollection;
 import net.sourceforge.guacamole.net.event.TunnelCloseEvent;
 import net.sourceforge.guacamole.net.event.TunnelConnectEvent;
 import net.sourceforge.guacamole.net.event.listener.TunnelCloseListener;
 import net.sourceforge.guacamole.net.event.listener.TunnelConnectListener;
+import net.sourceforge.guacamole.properties.GuacamoleProperties;
 import net.sourceforge.guacamole.protocol.ConfiguredGuacamoleSocket;
+import net.sourceforge.guacamole.protocol.GuacamoleClientInformation;
+import net.sourceforge.guacamole.protocol.GuacamoleConfiguration;
 import net.sourceforge.guacamole.servlet.GuacamoleHTTPTunnelServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -188,7 +190,30 @@ public class BasicGuacamoleTunnelServlet extends AuthenticatingHttpServlet {
             config.setParameter("password", password);
             config.setParameter("id", activeIds.get(0));
 
-            logger.info("Successful connection from {} to \"{}\".", request.getRemoteAddr());
+            logger.info("Successful connection from {} to \"{}\".", request.getRemoteAddr(), serverHostname);
+
+            // Get client information
+            GuacamoleClientInformation info = new GuacamoleClientInformation();
+           
+            // Set width if provided
+            String width  = request.getParameter("width");
+            if (width != null)
+                info.setOptimalScreenWidth(Integer.parseInt(width));
+
+            // Set height if provided
+            String height = request.getParameter("height");
+            if (height != null)
+                info.setOptimalScreenHeight(Integer.parseInt(height));
+           
+            // Add audio mimetypes
+            String[] audio_mimetypes = request.getParameterValues("audio");
+            if (audio_mimetypes != null)
+                info.getAudioMimetypes().addAll(Arrays.asList(audio_mimetypes));
+            
+            // Add video mimetypes
+            String[] video_mimetypes = request.getParameterValues("video");
+            if (video_mimetypes != null)
+                info.getVideoMimetypes().addAll(Arrays.asList(video_mimetypes));
 
             // Configure and connect socket
             String hostname = GuacamoleProperties.getProperty(GuacamoleProperties.GUACD_HOSTNAME);
@@ -196,7 +221,7 @@ public class BasicGuacamoleTunnelServlet extends AuthenticatingHttpServlet {
 
             GuacamoleSocket socket = new ConfiguredGuacamoleSocket(
                     new InetGuacamoleSocket(hostname, port),
-                    config
+                    config, info
             );
 
             // Associate socket with tunnel
